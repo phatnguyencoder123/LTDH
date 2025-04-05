@@ -1,20 +1,20 @@
- sigma_x: 0
-sigma_y: 0
-sigma_z: 0
-tau_xy: 0
-tau_xz: 0
-tau_yz: 0
-vx: 0
-vy: 2
-vz: 2
+ sigma_x: -2
+sigma_y: 10
+sigma_z: 5
+tau_xy: 3
+tau_xz: 2
+tau_yz: 3
+vx: 1
+vy: 0
+vz: 0
 
-# Kết quả tính toán
-principal_stress_1: 0.00
-principal_stress_2: 0.00
-principal_stress_3: 0.00
-# Phương chính
-principal_direction_1: [1.00, 0.00, 0.00]
-principal_direction_2: [0.00, 1.00, 0.00]
-principal_direction_3: [0.00, 0.00, 1.00]
-# Tích tensor ứng suất với vận tốc
-stress_velocity_result: [0.00, 0.00, 0.00]
+Kết quả tính toán
+principal_stress_1: 12.2962
+principal_stress_2: 3.6348
+principal_stress_3: -2.9310
+Phương chính
+principal_direction_1: [0.2425, 0.8721, 0.4250]
+principal_direction_2: [0.0739, -0.4534, 0.8882]
+principal_direction_3: [-0.9673, 0.1840, 0.1743]
+Vector ứng suất tương ứng với cosin chỉ phương được nhập
+stress_vector: [-2.0000, 3.0000, 2.0000]

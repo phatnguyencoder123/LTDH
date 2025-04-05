@@ -1,6 +1,6 @@
 import tkinter as tk
 from tkinter import messagebox
-import time  # Import for delay
+import time 
 import os
 from output_app import OutputApp
 from mohrcircle import MohrsCircleApp
@@ -11,11 +11,17 @@ from showobject import ShowObjectApp
 class InputApp(tk.Frame):
     def __init__(self, parent, controller):
         super().__init__(parent, bg="white")
-        self.controller = controller  # Tham chiếu đến MainApp
-        self.file_path = "D:/NetworkAutomation/LTDH/assets.txt"
+        self.controller = controller  
+        self.file_path =  "C:/HCMUT Learn/NetworkAutomation/LTDH/assets.txt"
         self.labels = [" sigma_x", "sigma_y", "sigma_z", "tau_xy", "tau_xz", "tau_yz","vx", "vy", "vz"]
-    
 
+        header_label = tk.Label(
+            self,
+            text="Nhập các giá trị ứng suất",
+            fg="black",
+            bg="white",
+        )
+        header_label.grid(row=0, column=0, columnspan=2, pady=(10, 5))
 
         # Danh sách các ô nhập liệu để dễ chuyển tiếp
         self.entries = []
@@ -44,12 +50,12 @@ class InputApp(tk.Frame):
         self.load_entries()
 
         # Save button
-        save_button = tk.Button(self, text="Calculate", command=self.call_function, bg="lightblue")
-        save_button.grid(row=len(self.labels), column=0, columnspan=2, pady=10)
+        save_button = tk.Button(self, text="Tính toán", command=self.call_function, bg="lightblue")
+        save_button.grid(row=len(self.labels) + 1, column=0, columnspan=2, pady=10)
 
 
     def call_function(self):
-        """Lưu dữ liệu, tính toán ứng suất chính và vẽ Mohr's Circle"""
+        '''gọi các hàm tính toán trong các file'''
         self.save_entries()
         time.sleep(0.1)
 
@@ -59,14 +65,14 @@ class InputApp(tk.Frame):
 
         self.controller.showobject.update_3d_object()
 
-        print("Tất cả tính năng đã hoạt động xong!")
+        print("call_function")
 
         
     def create_label_entry(self, text, row):
-        """Tạo nhãn và ô nhập liệu cho từng dòng"""
-        tk.Label(self, text=text, fg="black", bg="white").grid(row=row, column=0, padx=10, pady=5)
+        """Tạo nhãn và ô nhập liệu cho từng ô nhập liệu"""
+        tk.Label(self, text=text, fg="black", bg="white").grid(row=row+1, column=0, padx=10, pady=10)
         entry = tk.Entry(self)
-        entry.grid(row=row, column=1, padx=10, pady=5)
+        entry.grid(row=row+1, column=1, padx=10, pady=5)
         self.entries.append(entry)
 
     def move_next_entry(self, index, direction):
@@ -74,7 +80,6 @@ class InputApp(tk.Frame):
         Di chuyển đến ô nhập liệu tiếp theo hoặc trước đó.
         - index: Chỉ số hiện tại của ô nhập liệu.
         - direction: 1 (xuống), -1 (lên).
-        - flag: nếu ấn Enter thì mới hiển thị
         """
         try:
             # Lấy giá trị nhập và kiểm tra số hợp lệ
@@ -91,14 +96,6 @@ class InputApp(tk.Frame):
             self.entries[index].delete(0, tk.END)  # Xóa nội dung sai
             self.entries[index].focus()  # Giữ lại ô nhập lỗi để nhập lại
     
-    def save_entries(self):
-        """Lưu dữ liệu vào file assets.txt"""
-        values = [entry.get() if entry.get() else "0" for entry in self.entries] 
-        with open(self.file_path, "w") as file:
-            for label, value in zip(self.labels, values):
-                file.write(f"{label}: {value}\n")
-        print("Đã lưu dữ liệu vào file assets.txt")
-
     def load_entries(self):
         """Tải dữ liệu từ file assets.txt nếu có"""
         if os.path.exists(self.file_path):
@@ -114,3 +111,13 @@ class InputApp(tk.Frame):
                     except Exception as e:
                         print(f"Lỗi khi tải dòng {i + 1}: {e}")
         print("Đã tải dữ liệu từ file assets.txt")
+
+    def save_entries(self):
+        """Lưu dữ liệu vào file assets.txt"""
+        values = [entry.get() if entry.get() else "0" for entry in self.entries] 
+        with open(self.file_path, "w") as file:
+            for label, value in zip(self.labels, values):
+                file.write(f"{label}: {value}\n")
+        print("Đã lưu dữ liệu vào file assets.txt")
+
+    

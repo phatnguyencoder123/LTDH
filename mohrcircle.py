@@ -4,37 +4,32 @@ import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 
 
-
-
 class MohrsCircleApp(tk.Frame):
     def __init__(self, parent, controller):
         super().__init__(parent, bg="white")
         self.controller = controller
-        self.file_path = "D:/NetworkAutomation/LTDH/assets.txt"
+        self.file_path = "C:/HCMUT Learn/NetworkAutomation/LTDH/assets.txt"
         self.assets = {}
-        self.load_assets_from_text(self.file_path)  # Load dữ liệu từ file
+        self.load_assets_from_text(self.file_path)
+
+        self.result_frame = tk.Frame(self, bg="white", padx=10, pady=10, bd=2, relief="solid")
+        self.result_frame.pack(pady=10)
+        self.result_frame.pack_forget()
+
+        self.result_label = tk.Label(self.result_frame, text="", fg="black", bg="white", justify="left")
+        self.result_label.pack()
 
 
-        # Label hiển thị kết quả
-        self.result_label = tk.Label(self, text="", fg="black", font=("Arial", 12))
-        self.result_label.pack(pady=10)
-
-        # Vùng vẽ đồ thị
         self.fig, self.ax = plt.subplots(figsize=(6, 6))
         self.canvas = FigureCanvasTkAgg(self.fig, master=self)
         self.canvas.get_tk_widget().pack(pady=10)
 
-        # Toolbar để phóng to/thu nhỏ
         self.toolbar = NavigationToolbar2Tk(self.canvas, self)
         self.toolbar.update()
         self.toolbar.pack()
 
-    
-
-
-
     def load_assets_from_text(self, file_path):
-        """Đọc dữ liệu từ file assets.txt"""
+        """đọc giá trị các biến từ file assest.txt"""
         self.assets = {}
         with open(file_path, "r", encoding="utf-8") as file:
             for line in file:
@@ -45,51 +40,52 @@ class MohrsCircleApp(tk.Frame):
                     name, value = line.split(":")
                     self.assets[name.strip()] = float(value.strip())
                 except ValueError:
-                   pass
+                    pass
 
     def calculate(self):
-        """Tính toán ứng suất và vẽ các vòng tròn Mohr"""
-        self.load_assets_from_text(self.file_path)  # Cập nhật dữ liệu mới nhất
+        self.load_assets_from_text(self.file_path)
 
-        # Lấy dữ liệu ứng suất từ file
         sigma_x = self.assets.get("sigma_x", 0.0)
         sigma_y = self.assets.get("sigma_y", 0.0)
-        sigma_z = self.assets.get("sigma_z", 0.0)
         tau_xy = self.assets.get("tau_xy", 0.0)
-        tau_yz = self.assets.get("tau_yz", 0.0)
-        tau_xz = self.assets.get("tau_xz", 0.0)
 
-        # Tính toán các vòng tròn Mohr
-        circles = [
-            ("XY Plane", sigma_x, sigma_y, tau_xy),
-            ("YZ Plane", sigma_y, sigma_z, tau_yz),
-            ("ZX Plane", sigma_z, sigma_x, tau_xz)
-        ]
+        center = (sigma_x + sigma_y) / 2
+        radius = np.sqrt(((sigma_x - sigma_y) / 2) ** 2 + tau_xy ** 2)
+        sigma_max, sigma_min = center + radius, center - radius
 
-        self.ax.clear()  # Xóa đồ thị cũ
+        # xóa đồ thị trước đó
+        self.ax.clear()
+        theta = np.linspace(0, 2 * np.pi, 100)
+        circle_x = center + radius * np.cos(theta)
+        circle_y = radius * np.sin(theta)
 
-        result_text = "Ứng suất chính:\n"
-        for name, sigma_1, sigma_2, tau in circles:
-            center = (sigma_1 + sigma_2) / 2
-            radius = np.sqrt(((sigma_1 - sigma_2) / 2) ** 2 + tau ** 2)
-            sigma_max, sigma_min = center + radius, center - radius
+        # Draw Mohr's Circle
+        self.ax.plot(circle_x, circle_y, label="Vòng tròn Mohr", color="blue", linewidth=2)
+        self.ax.scatter([sigma_x, sigma_y], [tau_xy, -tau_xy], marker="o", color="black", label="Ứng suất trong mặt xy")
+        self.ax.scatter([sigma_max, sigma_min], [0, 0], marker="o", color="red", label="Ứng suất pháp max min trong mặt xy")
+        self.ax.scatter([center, center], [radius, -radius], marker="o", color="green", label="ứng suất tiếp max min trong mặt xy")
 
-            # Vẽ vòng tròn Mohr
-            theta = np.linspace(0, 2*np.pi, 100)
-            circle_x = center + radius * np.cos(theta)
-            circle_y = radius * np.sin(theta)
-
-            self.ax.plot(circle_x, circle_y, label=f"{name} Circle")
-            self.ax.scatter([sigma_1, sigma_2], [tau, -tau], marker="o", color="red")
-
-            result_text += f"{name}: σmax = {sigma_max:.2f}, σmin = {sigma_min:.2f}\n"
-
+        # Axes and labels
         self.ax.axhline(0, color="black", linestyle="--")
-        self.ax.set_xlabel("Normal Stress (σ)")
-        self.ax.set_ylabel("Shear Stress (τ)")
-        self.ax.legend(draggable=True)  # Cho phép di chuyển legend bằng chuột
-        self.ax.grid()
+        self.ax.axvline(center, color="green", linestyle="dashed")
+        self.ax.set_xlabel("ứng suất pháp (σ)", fontsize=12, fontweight='bold')
+        self.ax.set_ylabel("Ứng suất tiếp (τ)", fontsize=12, fontweight='bold')
+        self.ax.set_title("Vòng tròn Mohr xét trong mặt phẳng xy", fontsize=14, fontweight='bold')
+        self.ax.legend(loc="upper right", frameon=True, facecolor='white')
+        self.ax.grid(color='gray', linestyle='--', linewidth=0.5)
 
-        # Hiển thị kết quả và vẽ lại đồ thị
-        self.result_label.config(text=result_text, bg="white")
+        # Display results
+        result_text = (
+            "Ứng suất max min trong mặt phẳng xy\n"
+            "-------------------------\n"
+            f"σ_max: {sigma_max:.4f}\n"
+            f"σ_min: {sigma_min:.4f}\n"
+            "-------------------------\n"
+            "Lưu ý rằng ứng suất này không phải ứng suất chính"
+        )
+
+        self.ax.legend().set_draggable(True)
+        self.result_label.config(text=result_text, bg="lightyellow",justify="center")
+        self.result_frame.config(bg="lightyellow")
+        self.result_frame.pack(pady=10)
         self.canvas.draw()
